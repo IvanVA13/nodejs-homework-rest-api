@@ -12,6 +12,7 @@ const {
 const {
   validationAddContact,
   validationUpdateContact,
+  validationUpdateContactFavoriteStatus,
 } = require('./validation');
 
 router.get('/', async (_, res, next) => {
@@ -25,7 +26,7 @@ router.get('/', async (_, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    next(error.message);
   }
 });
 
@@ -111,5 +112,31 @@ router.put('/:contactId', validationUpdateContact, async (req, res, next) => {
     next(error);
   }
 });
+
+router.patch(
+  '/:contactId/favorite',
+  validationUpdateContactFavoriteStatus,
+  async (req, res, next) => {
+    try {
+      const contact = await updateContact(req.params.contactId, req.body);
+      if (contact) {
+        return res.json({
+          status: 'success',
+          code: 200,
+          data: {
+            contact,
+          },
+        });
+      }
+      return res.status(404).json({
+        status: 'error',
+        code: 404,
+        message: 'Not found :(',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 module.exports = router;
