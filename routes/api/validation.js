@@ -13,6 +13,7 @@ const schemaAddContact = Joi.object({
     })
     .required(),
   phone: Joi.string().regex(/^\d+/).min(10).max(12).required(),
+  favorite: Joi.boolean().optional(),
 });
 
 const schemaUpdateContact = Joi.object({
@@ -30,27 +31,40 @@ const schemaUpdateContact = Joi.object({
   phone: Joi.string().regex(/^\d+/).min(10).max(12).optional(),
 }).or('name', 'email', 'phone');
 
-const validate = async (schema, validatedValue, next) => {
+const schemaUpdateContactFavoriteStatus = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
+const validate = async (schema, validatedValue, errMessage, next) => {
   try {
     await schema.validateAsync(validatedValue);
-    console.log(validatedValue);
     next();
   } catch (err) {
     next({
       status: 400,
-      message:
-        schema === schemaAddContact
-          ? 'missing required name field'
-          : 'missing fields',
+      message: errMessage,
     });
   }
 };
 
 module.exports = {
-  validationAddContact: (req, res, next) => {
-    return validate(schemaAddContact, req.body, next);
+  validationAddContact: (req, _, next) => {
+    return validate(
+      schemaAddContact,
+      req.body,
+      'missing required name field',
+      next,
+    );
   },
-  validationUpdateContact: (req, res, next) => {
-    return validate(schemaUpdateContact, req.body, next);
+  validationUpdateContact: (req, _, next) => {
+    return validate(schemaUpdateContact, req.body, 'missing fields', next);
+  },
+  validationUpdateContactFavoriteStatus: (req, _, next) => {
+    return validate(
+      schemaUpdateContactFavoriteStatus,
+      req.body,
+      'missing field favorite',
+      next,
+    );
   },
 };
