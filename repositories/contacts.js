@@ -2,8 +2,21 @@ require('dotenv').config();
 
 const Contact = require('../model/contact');
 
-const listContacts = async userId => {
-  return await Contact.find({ owner: userId });
+const listContacts = async (userId, query) => {
+  const { limit = 20, page = 1, sortBy, sortByDesc, favorite } = query;
+  const options =
+    typeof favorite === 'boolean'
+      ? { owner: userId, favorite }
+      : { owner: userId };
+  const result = await Contact.paginate(options, {
+    page,
+    limit,
+    sort: {
+      ...(sortBy ? { [`${sortBy}`]: 1 } : {}),
+      ...(sortByDesc ? { [`${sortByDesc}`]: -1 } : {}),
+    },
+  });
+  return result;
 };
 
 const getContactById = async (userId, contactId) => {

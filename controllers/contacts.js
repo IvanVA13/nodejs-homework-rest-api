@@ -10,16 +10,20 @@ const {
 const getAll = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const contacts = await listContacts(userId);
+    const { docs: contacts, ...page } = await listContacts(userId, req.query);
+
     return res.json({
       status: statusCode.SUCCESS,
       code: httpCode.OK,
       data: {
-        contacts,
+        page,
+        contacts: contacts.filter(contact =>
+          req.query.favorite ? contact.favorite : contact,
+        ),
       },
     });
-  } catch (error) {
-    next(error.message);
+  } catch (err) {
+    next(err.message);
   }
 };
 
@@ -41,8 +45,8 @@ const getById = async (req, res, next) => {
       code: httpCode.NOT_FOUND,
       message: message.NOT_FOUND,
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -50,7 +54,14 @@ const create = async (req, res, next) => {
   try {
     if (req.body) {
       const userId = req.user.id;
-      const newContact = await addContact(userId, req.body);
+      const { phone, ...rest } = req.body;
+      const newContact = await addContact(userId, {
+        ...rest,
+        phone: await phone.replace(
+          /([0-9]{3})([0-9]{3})([0-9]{4})/,
+          '($1) $2-$3',
+        ),
+      });
       return res.status(httpCode.CREATED).json({
         status: statusCode.SUCCESS,
         code: httpCode.CREATED,
@@ -59,8 +70,8 @@ const create = async (req, res, next) => {
         },
       });
     }
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -82,8 +93,8 @@ const del = async (req, res, next) => {
       code: httpCode.NOT_FOUND,
       message: message.NOT_FOUND,
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -105,8 +116,8 @@ const update = async (req, res, next) => {
       code: httpCode.NOT_FOUND,
       message: message.NOT_FOUND,
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 

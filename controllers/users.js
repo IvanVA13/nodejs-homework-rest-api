@@ -7,6 +7,7 @@ const {
   getUserByEmail,
   addUser,
   updateUserToken,
+  updateSubscription,
 } = require('../repositories/users.js');
 
 const signup = async (req, res, next) => {
@@ -96,4 +97,28 @@ const current = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, login, logout, current };
+const subscription = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const user = await updateSubscription(userId, req.body);
+    if (user) {
+      const { id, email, subscription } = user;
+      return res.json({
+        status: statusCode.SUCCESS,
+        code: httpCode.OK,
+        data: {
+          user: { id, email, subscription },
+        },
+      });
+    }
+    return res.status(httpCode.NOT_FOUND).json({
+      status: statusCode.ERROR,
+      code: httpCode.NOT_FOUND,
+      message: message.NOT_FOUND,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { signup, login, logout, current, subscription };

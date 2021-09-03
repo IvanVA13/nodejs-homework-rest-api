@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 const { httpCode } = require('../../../helpers/constants.js');
 
-const userSchema = Joi.object({
+const userValidateSchema = Joi.object({
   email: Joi.string()
     .email({
       minDomainSegments: 2,
@@ -10,6 +10,12 @@ const userSchema = Joi.object({
     })
     .required(),
   password: Joi.string().min(8).max(48).required(),
+  subscription: Joi.string().valid('starter', 'pro', 'business').optional(),
+  token: Joi.string().optional(),
+});
+
+const userUpdateSubscriptionValidateSchema = Joi.object({
+  subscription: Joi.string().valid('starter', 'pro', 'business').required(),
 });
 
 const validate = async (schema, validatedValue, errMessage, next) => {
@@ -26,6 +32,19 @@ const validate = async (schema, validatedValue, errMessage, next) => {
 
 module.exports = {
   validationUser: (req, _, next) => {
-    return validate(userSchema, req.body, 'missing required name field', next);
+    return validate(
+      userValidateSchema,
+      req.body,
+      'missing required name field',
+      next,
+    );
+  },
+  validationUpdateSubscriptionUser: (req, _, next) => {
+    return validate(
+      userUpdateSubscriptionValidateSchema,
+      req.body,
+      'missing subscription field',
+      next,
+    );
   },
 };
