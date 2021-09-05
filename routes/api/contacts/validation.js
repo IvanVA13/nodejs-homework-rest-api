@@ -1,5 +1,7 @@
 const Joi = require('joi');
 
+const { httpCode } = require('../../../helpers/constants.js');
+
 const schemaAddContact = Joi.object({
   name: Joi.string()
     .regex(/^\w+(?:\s+\w+)*$/)
@@ -41,7 +43,7 @@ const validate = async (schema, validatedValue, errMessage, next) => {
     next();
   } catch (err) {
     next({
-      status: 400,
+      status: httpCode.BAD_REQUEST,
       message: errMessage,
     });
   }

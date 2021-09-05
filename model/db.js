@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { message } = require('../helpers/constants');
 require('dotenv').config();
 const uriDb = process.env.DB_HOST;
 
@@ -9,15 +10,15 @@ const db = mongoose.connect(uriDb, {
 });
 
 mongoose.connection.on('connected', () =>
-  console.log('Database connection successful'),
+  console.log(message.DB_CONNECT_SUCCESS),
 );
 
 mongoose.connection.on('disconnected', () =>
-  console.log('Connection to database terminated'),
+  console.log(message.DB_CONNECT_TERMINATED),
 );
 
 mongoose.connection.on('error', e => {
-  console.log(`Error connection to db: ${e.message}`);
+  console.log(`${message.DB_CONNECT_ERROR} ${e.message}`);
   process.exit(1);
 });
 
