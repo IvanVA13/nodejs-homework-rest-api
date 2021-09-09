@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const User = require('../model/user');
 
 const listUsers = async () => {
@@ -31,6 +29,15 @@ const updateSubscription = async (userId, body) => {
   return user;
 };
 
+const updateUserAvatar = async (userId, body) => {
+  const userAvatar = await User.findOneAndUpdate(
+    { _id: userId },
+    { ...body },
+    { new: true },
+  );
+  return userAvatar;
+};
+
 module.exports = {
   listUsers,
   getUserById,
@@ -38,4 +45,5 @@ module.exports = {
   addUser,
   updateUserToken,
   updateSubscription,
+  updateUserAvatar,
 };

@@ -13,11 +13,15 @@ const {
   reqLimiterAPI,
 } = require('./helpers/constants.js');
 
+require('dotenv').config();
+const PUBLIC_FOLDER = process.env.PUBLIC_FOLDER;
+
 const app = express();
 
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short';
 
 app.use(helmet());
+app.use(express.static(PUBLIC_FOLDER));
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json({ limit: 5000 }));
