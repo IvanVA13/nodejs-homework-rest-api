@@ -1,12 +1,19 @@
 const mongoose = require('mongoose');
 const { message } = require('../helpers/constants');
 require('dotenv').config();
-const uriDb = process.env.DB_HOST;
+let uriDb = null;
+const { DB_HOST, DB_HOST_TEST, NODE_ENV } = process.env;
+if (NODE_ENV === 'test') {
+  uriDb = DB_HOST_TEST;
+} else {
+  uriDb = DB_HOST;
+}
 
 const db = mongoose.connect(uriDb, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true,
+  useFindAndModify: false,
 });
 
 mongoose.connection.on('connected', () =>

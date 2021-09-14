@@ -30,11 +30,11 @@ app.use(boolParser());
 app.use('/api', rateLimit(reqLimiterAPI));
 app.use('/api', router);
 
-app.use((req, res) => {
+app.use((_, res) => {
   res.status(httpCode.NOT_FOUND).json({ message: message.NOT_FOUND });
 });
 
-app.use((err, req, res, next) => {
+app.use((err, _, res, __) => {
   const status = err.status || statusCode.INTERNAL_SERVER_ERROR;
   res.status(status).json({ message: err.message });
 });
