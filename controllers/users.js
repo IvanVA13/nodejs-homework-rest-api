@@ -2,13 +2,17 @@ const jwt = require('jsonwebtoken');
 
 require('dotenv').config();
 const SECRET_KEY = process.env.SECRET_KEY;
+const USERS_AVATARS = process.env.USERS_AVATARS;
+
 const { httpCode, message, statusCode } = require('../helpers/constants.js');
 const {
   getUserByEmail,
   addUser,
   updateUserToken,
   updateSubscription,
+  updateUserAvatar,
 } = require('../repositories/users.js');
+const UploadAvatarService = require('../services/upload-avatar.js');
 
 const signup = async (req, res, next) => {
   try {
@@ -20,7 +24,7 @@ const signup = async (req, res, next) => {
         message: message.CONFLICT,
       });
     }
-    const { email, subscription } = await addUser(req.body);
+    const { email, subscription, avatarURL } = await addUser(req.body);
     return res.status(httpCode.CREATED).json({
       status: statusCode.SUCCESS,
       code: httpCode.CREATED,
@@ -28,6 +32,7 @@ const signup = async (req, res, next) => {
         user: {
           email,
           subscription,
+          avatarURL,
         },
       },
     });
@@ -101,24 +106,37 @@ const subscription = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const user = await updateSubscription(userId, req.body);
-    if (user) {
-      const { id, email, subscription } = user;
-      return res.json({
-        status: statusCode.SUCCESS,
-        code: httpCode.OK,
-        data: {
-          user: { id, email, subscription },
-        },
-      });
-    }
-    return res.status(httpCode.NOT_FOUND).json({
-      status: statusCode.ERROR,
-      code: httpCode.NOT_FOUND,
-      message: message.NOT_FOUND,
+    const { id, email, subscription } = user;
+    return res.json({
+      status: statusCode.SUCCESS,
+      code: httpCode.OK,
+      data: {
+        user: { id, email, subscription },
+      },
     });
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { signup, login, logout, current, subscription };
+const avatar = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const upload = new UploadAvatarService(USERS_AVATARS);
+    const addedAvatarURL = await upload.saveAvatar({ file: req.file });
+    const { avatarURL } = await updateUserAvatar(userId, {
+      avatarURL: addedAvatarURL,
+    });
+    return res.json({
+      status: statusCode.SUCCESS,
+      code: httpCode.OK,
+      data: {
+        user: { avatarURL },
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { signup, login, logout, current, subscription, avatar };
