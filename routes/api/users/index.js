@@ -7,6 +7,7 @@ const {
   current,
   subscription,
   avatar,
+  verification,
 } = require('../../../controllers/users.js');
 
 const guard = require('../../../helpers/guard.js');
@@ -25,5 +26,6 @@ router.post('/logout', guard, logout);
 router.get('/current', guard, current);
 router.patch('/', guard, validationUpdateSubscriptionUser, subscription);
 router.patch('/avatars', guard, uploadImg.single('avatar'), avatar);
+router.get('/verify/:verificationToken', verification);
 
 module.exports = router;

@@ -25,6 +25,8 @@ const message = {
   DB_CONNECT_SUCCESS: 'Database connection successful',
   DB_CONNECT_TERMINATED: 'Connection to database terminated',
   DB_CONNECT_ERROR: 'Error connection to db:',
+  VERIFY_SUCCESS: 'Verification successful',
+  VERIFY_RESEND: 'Verification email sent',
 };
 
 const reqLimiterAPI = {

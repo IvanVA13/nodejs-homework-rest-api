@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
+const { v4: uuid } = require('uuid');
 
 require('dotenv').config();
-const SECRET_KEY = process.env.SECRET_KEY;
-const USERS_AVATARS = process.env.USERS_AVATARS;
+const { SECRET_KEY, USERS_AVATARS, NODE_ENV } = process.env;
 
 const { httpCode, message, statusCode } = require('../helpers/constants.js');
 const {
@@ -11,7 +11,11 @@ const {
   updateUserToken,
   updateSubscription,
   updateUserAvatar,
+  getUserByVerifyToken,
+  updateUserVerification,
 } = require('../repositories/users.js');
+const SenderVerifyEmailToUser = require('../services/email-verify.js');
+const { createSenderNodemailer } = require('../services/sender-emails.js');
 const UploadAvatarService = require('../services/upload-avatar.js');
 
 const signup = async (req, res, next) => {
@@ -24,7 +28,18 @@ const signup = async (req, res, next) => {
         message: message.CONFLICT,
       });
     }
-    const { email, subscription, avatarURL } = await addUser(req.body);
+    const verifyToken = uuid();
+    const { email, subscription, avatarURL } = await addUser({
+      ...req.body,
+      verifyToken,
+    });
+    const verifyEmail = new SenderVerifyEmailToUser(
+      NODE_ENV,
+      createSenderNodemailer,
+    );
+
+    await verifyEmail.sendVerifyEmail(email, verifyToken);
+
     return res.status(httpCode.CREATED).json({
       status: statusCode.SUCCESS,
       code: httpCode.CREATED,
@@ -33,6 +48,7 @@ const signup = async (req, res, next) => {
           email,
           subscription,
           avatarURL,
+          verifyToken,
         },
       },
     });
@@ -46,7 +62,7 @@ const login = async (req, res, next) => {
     if (req.body) {
       const user = await getUserByEmail(req.body.email);
       const validPass = await user?.isValidPassword(req.body.password);
-      if (!user || !validPass) {
+      if (!user || !validPass || !user.verify) {
         return res.status(httpCode.UNAUTHORIZED).json({
           status: statusCode.UNAUTHORIZED,
           code: httpCode.UNAUTHORIZED,
@@ -139,4 +155,56 @@ const avatar = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, login, logout, current, subscription, avatar };
+const verification = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await getUserByVerifyToken(verificationToken);
+    console.log(user);
+    if (!user) {
+      return res.status(httpCode.NOT_FOUND).json({
+        status: statusCode.ERROR,
+        code: httpCode.NOT_FOUND,
+        message: message.NOT_FOUND,
+      });
+    }
+    console.log(1);
+    if (req.body.email && !user.verify) {
+      const verifyEmail = new SenderVerifyEmailToUser(
+        NODE_ENV,
+        createSenderNodemailer,
+      );
+
+      await verifyEmail.sendVerifyEmail(req.body.email, user.verifyToken);
+
+      return res.json({
+        status: statusCode.SUCCESS,
+        code: httpCode.OK,
+        message: message.VERIFY_RESEND,
+      });
+    }
+
+    if (!req.body.email && verificationToken === user.verifyToken) {
+      await updateUserVerification(user._id, {
+        verifyToken: null,
+        verify: true,
+      });
+      return res.json({
+        status: statusCode.SUCCESS,
+        code: httpCode.OK,
+        message: message.VERIFY_SUCCESS,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  signup,
+  login,
+  logout,
+  current,
+  subscription,
+  avatar,
+  verification,
+};

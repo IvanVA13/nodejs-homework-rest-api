@@ -12,6 +12,8 @@ const userValidateSchema = Joi.object({
   password: Joi.string().min(8).max(48).required(),
   subscription: Joi.string().valid('starter', 'pro', 'business').optional(),
   token: Joi.string().optional(),
+  avatar: Joi.string().optional(),
+  verifyToken: Joi.string().optional(),
 });
 
 const userUpdateSubscriptionValidateSchema = Joi.object({

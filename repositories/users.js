@@ -38,6 +38,19 @@ const updateUserAvatar = async (userId, body) => {
   return userAvatar;
 };
 
+const getUserByVerifyToken = async verifyToken => {
+  return await User.findOne({ verifyToken });
+};
+
+const updateUserVerification = async (userId, body) => {
+  const userVerification = await User.findOneAndUpdate(
+    { _id: userId },
+    { ...body },
+    { new: true },
+  );
+  return userVerification;
+};
+
 module.exports = {
   listUsers,
   getUserById,
@@ -46,4 +59,6 @@ module.exports = {
   updateUserToken,
   updateSubscription,
   updateUserAvatar,
+  getUserByVerifyToken,
+  updateUserVerification,
 };
