@@ -1,3 +1,5 @@
+const { TooManyRequests } = require('http-errors');
+
 const httpCode = {
   OK: 200,
   CREATED: 201,
@@ -25,17 +27,15 @@ const message = {
   DB_CONNECT_SUCCESS: 'Database connection successful',
   DB_CONNECT_TERMINATED: 'Connection to database terminated',
   DB_CONNECT_ERROR: 'Error connection to db:',
+  VERIFY_SUCCESS: 'Verification successful',
+  VERIFY_RESEND: 'Verification email sent',
 };
 
 const reqLimiterAPI = {
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000,
-  handler: (req, res, next) => {
-    return res.status(httpCode.TOO_MANY_REQUESTS).json({
-      status: statusCode.ERROR,
-      code: httpCode.TOO_MANY_REQUESTS,
-      message: message.TOO_MANY_REQUESTS,
-    });
+  handler: (_, __, ___) => {
+    throw new TooManyRequests(message.TOO_MANY_REQUESTS);
   },
 };
 

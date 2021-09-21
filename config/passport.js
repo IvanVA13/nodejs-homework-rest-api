@@ -1,7 +1,7 @@
 const passport = require('passport');
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 require('dotenv').config();
-const SECRET_KEY = process.env.SECRET_KEY;
+const { SECRET_KEY } = process.env;
 const { getUserById } = require('../repositories/users');
 
 const opts = {};
