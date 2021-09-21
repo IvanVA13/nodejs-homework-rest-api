@@ -54,8 +54,7 @@ class SenderVerifyEmailToUser {
       html: emailBodyHtml,
     };
     const sendedEmailVerify = await this.sender(emailVerify);
-    console.log(this.link);
-    // console.log(sendedEmailVerify);
+    console.log(sendedEmailVerify);
   }
 }
 

@@ -10,11 +10,13 @@ const uniquePartOfName = `${Date.now()}~${new Date(
 ).toLocaleDateString('ua-UA')}`;
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_, __, cb) => {
     cb(null, UPLOAD);
   },
   filename: (req, file, cb) => {
-    const userId = req.user.id;
+    const {
+      user: { id: userId },
+    } = req;
     cb(null, `${userId}~${uniquePartOfName}~${file.originalname}`);
   },
   limits: {
@@ -24,13 +26,13 @@ const storage = multer.diskStorage({
 
 const uploadImg = multer({
   storage: storage,
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_, file, cb) => {
     if (file.mimetype.includes('image')) {
       cb(null, true);
       return;
     }
     const err = new Error('Wrong format!');
-    err.status(httpCode.BAD_REQUEST);
+    err.status = httpCode.BAD_REQUEST;
     cb(err);
   },
 });

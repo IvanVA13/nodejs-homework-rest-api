@@ -20,7 +20,10 @@ const listContacts = async (userId, query) => {
 };
 
 const getContactById = async (userId, contactId) => {
-  return await Contact.findOne({ _id: contactId, owner: userId });
+  return await Contact.findOne({ _id: contactId, owner: userId }).populate({
+    path: 'owner',
+    select: '_id, email',
+  });
 };
 
 const addContact = async (userId, body) => {

@@ -1,10 +1,9 @@
 const app = require('../app');
 const db = require('../model/db');
-const PORT = process.env.PORT || 3000;
+const { PORT = 3000 } = process.env;
 
 require('dotenv').config();
-const UPLOAD = process.env.UPLOAD;
-const PUBLIC_FOLDER = process.env.PUBLIC_FOLDER;
+const { UPLOAD, PUBLIC_FOLDER } = process.env;
 
 const createFolderIsNotExist = require('../helpers/create-folder.js');
 db.then(() => {

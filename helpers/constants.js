@@ -1,3 +1,5 @@
+const { TooManyRequests } = require('http-errors');
+
 const httpCode = {
   OK: 200,
   CREATED: 201,
@@ -32,12 +34,8 @@ const message = {
 const reqLimiterAPI = {
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000,
-  handler: (req, res, next) => {
-    return res.status(httpCode.TOO_MANY_REQUESTS).json({
-      status: statusCode.ERROR,
-      code: httpCode.TOO_MANY_REQUESTS,
-      message: message.TOO_MANY_REQUESTS,
-    });
+  handler: (_, __, ___) => {
+    throw new TooManyRequests(message.TOO_MANY_REQUESTS);
   },
 };
 

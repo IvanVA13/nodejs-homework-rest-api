@@ -1,7 +1,10 @@
 const nodemailer = require('nodemailer');
 
+const sgMail = require('@sendgrid/mail');
+
 require('dotenv').config();
-const { EMAIL_SENDING_LOGIN, EMAIL_SENDING_PASS } = process.env;
+const { EMAIL_SENDING_LOGIN, EMAIL_SENDING_PASS, SENDGRID_API_KEY } =
+  process.env;
 
 const createSenderNodemailer = async bodyMsg => {
   const config = {
@@ -17,4 +20,13 @@ const createSenderNodemailer = async bodyMsg => {
   return await transporter.sendMail({ ...bodyMsg, from: EMAIL_SENDING_LOGIN });
 };
 
-module.exports = { createSenderNodemailer };
+const createSenderSendGrid = async bodyMsg => {
+  sgMail.setApiKey(SENDGRID_API_KEY);
+
+  return await sgMail.send({
+    ...bodyMsg,
+    from: `Jungle <${EMAIL_SENDING_LOGIN}>`,
+  });
+};
+
+module.exports = { createSenderNodemailer, createSenderSendGrid };
